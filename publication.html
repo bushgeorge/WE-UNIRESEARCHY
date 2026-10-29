@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}{{ publication.title }} - WE UNIRESEARCHITY{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Breadcrumb -->
+    <nav class="mb-6 text-sm text-gray-600">
+        <a href="/" class="hover:text-primary">Home</a> 
+        <span class="mx-2">/</span>
+        <a href="/search" class="hover:text-primary">Browse Research</a>
+        <span class="mx-2">/</span>
+        <span class="text-gray-800 font-medium">{{ publication.title|truncate(50) }}</span>
+    </nav>
+
+    <!-- Publication Header -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+        <div class="p-8">
+            <!-- Type and Year Badges -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <span class="px-3 py-1 bg-primary/10 text-primary text-sm font-semibold rounded-full">
+                    {{ publication.research_type.value|replace('_', ' ')|title }}
+                </span>
+                <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-semibold rounded-full">
+                    {{ publication.year }}
+                </span>
+                {% if publication.doi %}
+                <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
+                    <i class="fas fa-fingerprint mr-1"></i> DOI: {{ publication.doi }}
+                </span>
+                {% endif %}
+            </div>
+            
+            <!-- Title -->
+            <h1 class="text-3xl font-bold mb-4 text-gray-900">{{ publication.title }}</h1>
+            
+            <!-- Authors -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Authors</h3>
+                <div class="flex flex-wrap gap-3">
+                    {% for researcher in publication.researchers %}
+                    <a href="/researcher/{{ researcher.id }}" class="flex items-center hover:no-underline group">
+                        <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-2 group-hover:bg-primary/20 transition-colors">
+                            <i class="fas fa-user text-gray-600 group-hover:text-primary"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-800 group-hover:text-primary">{{ researcher.full_name }}</p>
+                            <p class="text-xs text-gray-600">{{ researcher.position or 'Researcher' }}</p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- University Info -->
+            <div class="flex items-center mb-6">
+                <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-university text-gray-600"></i>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-800">{{ publication.university.name }}</p>
+                    {% if publication.department %}
+                    <p class="text-sm text-gray-600">{{ publication.department }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Supervisor (for theses) -->
+            {% if publication.supervisor %}
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Supervisor/Advisor</h3>
+                <p class="text-gray-800">{{ publication.supervisor }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2">
+            <!-- Abstract -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold mb-4 text-gray-900">Abstract</h2>
+                <div class="prose max-w-none text-gray-700">
+                    {{ publication.abstract|replace('\n', '<br>')|safe }}
+                </div>
+            </div>
+            
+            <!-- Keywords -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold mb-4 text-gray-900">Keywords</h2>
+                <div class="flex flex-wrap gap-2">
+                    {% for keyword in publication.keywords.split(',') %}
+                    <a href="/search?q={{ keyword.strip() }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors">
+                        {{ keyword.strip() }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Citation -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-900">Citation (APA Format)</h2>
+                    <button 
+                        onclick="copyToClipboard('{{ apa_citation|replace("'", "\\'") }}', this)" 
+                        class="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-dark flex items-center"
+                    >
+                        <i class="fas fa-copy mr-2"></i> Copy Citation
+                    </button>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-gray-700 font-mono text-sm leading-relaxed">{{ apa_citation }}</p>
+                </div>
+                <p class="text-sm text-gray-500 mt-3">
+                    <i class="fas fa-info-circle mr-1"></i> Please use this citation when referencing this work.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+            <!-- Download Card -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6 sticky top-6">
+                <h3 class="font-bold text-lg mb-4">Download</h3>
+                
+                {% if publication.filename %}
+                <div class="mb-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-file-pdf text-red-500 text-3xl mr-3"></i>
+                        <div>
+                            <p class="font-medium">Full Text PDF</p>
+                            {% if publication.file_size %}
+                            <p class="text-sm text-gray-600">{{ (publication.file_size / 1024 / 1024)|round(2) }} MB</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <a 
+                        href="/static/uploads/{{ publication.filename }}" 
+                        target="_blank" 
+                        class="block w-full bg-red-500 text-white text-center py-3 rounded-lg font-semibold hover:bg-red-600 mb-3"
+                    >
+                        <i class="fas fa-download mr-2"></i> Download PDF
+                    </a>
+                    
+                    <a 
+                        href="/static/uploads/{{ publication.filename }}" 
+                        target="_blank" 
+                        class="block w-full bg-gray-100 text-gray-800 text-center py-3 rounded-lg font-semibold hover:bg-gray-200"
+                    >
+                        <i class="fas fa-external-link-alt mr-2"></i> View in Browser
+                    </a>
+                </div>
+                {% else %}
+                <div class="text-center py-6">
+                    <i class="fas fa-file text-gray-400 text-4xl mb-3"></i>
+                    <p class="text-gray-600">No file available for download</p>
+                </div>
+                {% endif %}
+                
+                <!-- Metadata -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h4 class="font-semibold mb-3">Publication Details</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-600">Type</p>
+                            <p class="font-medium">{{ publication.research_type.value|replace('_', ' ')|title }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Year</p>
+                            <p class="font-medium">{{ publication.year }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Subject Area</p>
+                            <p class="font-medium">{{ publication.subject_area }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Submitted</p>
+                            <p class="font-medium">{{ publication.created_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Share Card -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="font-bold text-lg mb-4">Share This Research</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <button 
+                        onclick="shareOnTwitter()" 
+                        class="bg-blue-500 text-white py-2 rounded-lg font-medium hover:bg-blue-600 flex items-center justify-center"
+                    >
+                        <i class="fab fa-twitter mr-2"></i> Twitter
+                    </button>
+                    <button 
+                        onclick="shareOnLinkedIn()" 
+                        class="bg-blue-700 text-white py-2 rounded-lg font-medium hover:bg-blue-800 flex items-center justify-center"
+                    >
+                        <i class="fab fa-linkedin mr-2"></i> LinkedIn
+                    </button>
+                    <button 
+                        onclick="shareOnFacebook()" 
+                        class="bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center"
+                    >
+                        <i class="fab fa-facebook mr-2"></i> Facebook
+                    </button>
+                    <button 
+                        onclick="copyLink()" 
+                        class="bg-gray-200 text-gray-800 py-2 rounded-lg font-medium hover:bg-gray-300 flex items-center justify-center"
+                    >
+                        <i class="fas fa-link mr-2"></i> Copy Link
+                    </button>
+                </div>
+                
+                <!-- Permanent URL -->
+                <div class="mt-6">
+                    <p class="text-sm text-gray-600 mb-2">Permanent URL</p>
+                    <div class="flex">
+                        <input 
+                            type="text" 
+                            value="{{ request.url }}" 
+                            readonly 
+                            class="flex-grow px-3 py-2 border border-gray-300 rounded-l-lg text-sm"
+                            id="permalink"
+                        >
+                        <button 
+                            onclick="copyPermalink()" 
+                            class="bg-gray-200 text-gray-800 px-3 py-2 rounded-r-lg hover:bg-gray-300"
+                        >
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Related Research -->
+            {% if related_publications %}
+            <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
+                <h3 class="font-bold text-lg mb-4">Related Research</h3>
+                <div class="space-y-4">
+                    {% for related in related_publications %}
+                    <a href="/publication/{{ related.id }}" class="block hover:no-underline">
+                        <div class="border-l-4 border-primary pl-3 py-1">
+                            <p class="font-medium text-gray-800 hover:text-primary line-clamp-2">{{ related.title }}</p>
+                            <p class="text-sm text-gray-600">{{ related.year }} • {{ related.university.abbreviation }}</p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Back to Search -->
+    <div class="mt-8 text-center">
+        <a 
+            href="/search" 
+            class="inline-flex items-center text-primary font-semibold hover:underline"
+        >
+            <i class="fas fa-arrow-left mr-2"></i> Back to Search Results
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Share functions
+    function shareOnTwitter() {
+        const url = encodeURIComponent(window.location.href);
+        const text = encodeURIComponent('Check out this research: {{ publication.title }}');
+        window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+    }
+    
+    function shareOnLinkedIn() {
+        const url = encodeURIComponent(window.location.href);
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+    }
+    
+    function shareOnFacebook() {
+        const url = encodeURIComponent(window.location.href);
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    }
+    
+    function copyLink() {
+        copyToClipboard(window.location.href, document.querySelector('[onclick="copyLink()"]'));
+    }
+    
+    function copyPermalink() {
+        const permalinkInput = document.getElementById('permalink');
+        copyToClipboard(permalinkInput.value, document.querySelector('[onclick="copyPermalink()"]'));
+    }
+    
+    // Copy to clipboard helper
+    function copyToClipboard(text, button) {
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i>';
+            button.classList.add('bg-green-500', 'hover:bg-green-600');
+            button.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('bg-green-500', 'hover:bg-green-600');
+                button.classList.add('bg-gray-200', 'hover:bg-gray-300');
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            alert('Failed to copy text to clipboard');
+        });
+    }
+</script>
+{% endblock %}

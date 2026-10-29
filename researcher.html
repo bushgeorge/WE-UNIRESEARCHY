@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}{{ researcher.full_name }} - WE UNIRESEARCHITY{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Breadcrumb -->
+    <nav class="mb-6 text-sm text-gray-600">
+        <a href="/" class="hover:text-primary">Home</a> 
+        <span class="mx-2">/</span>
+        <a href="/search" class="hover:text-primary">Researchers</a>
+        <span class="mx-2">/</span>
+        <span class="text-gray-800 font-medium">{{ researcher.full_name }}</span>
+    </nav>
+
+    <!-- Researcher Profile Header -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+        <div class="p-8">
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
+                <!-- Avatar -->
+                <div class="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user-graduate text-primary text-3xl"></i>
+                </div>
+                
+                <!-- Basic Info -->
+                <div class="flex-grow">
+                    <h1 class="text-3xl font-bold mb-2 text-gray-900">{{ researcher.full_name }}</h1>
+                    
+                    <div class="flex flex-wrap items-center gap-4 mb-4">
+                        {% if researcher.university %}
+                        <div class="flex items-center">
+                            <i class="fas fa-university text-gray-500 mr-2"></i>
+                            <a href="/search?university_id={{ researcher.university.id }}" class="text-gray-700 hover:text-primary">
+                                {{ researcher.university.name }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if researcher.department %}
+                        <div class="flex items-center">
+                            <i class="fas fa-building text-gray-500 mr-2"></i>
+                            <span class="text-gray-700">{{ researcher.department }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if researcher.position %}
+                        <div class="flex items-center">
+                            <i class="fas fa-briefcase text-gray-500 mr-2"></i>
+                            <span class="text-gray-700">{{ researcher.position }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Contact and IDs -->
+                    <div class="flex flex-wrap gap-4">
+                        {% if researcher.email %}
+                        <div class="flex items-center">
+                            <i class="fas fa-envelope text-gray-500 mr-2"></i>
+                            <a href="mailto:{{ researcher.email }}" class="text-gray-700 hover:text-primary">
+                                {{ researcher.email }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if researcher.orcid_id %}
+                        <div class="flex items-center">
+                            <i class="fab fa-orcid text-green-600 mr-2"></i>
+                            <a href="https://orcid.org/{{ researcher.orcid_id }}" target="_blank" class="text-gray-700 hover:text-primary">
+                                {{ researcher.orcid_id }}
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Stats -->
+                <div class="bg-gray-50 rounded-lg p-4 min-w-[200px]">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary mb-1">{{ publications|length }}</div>
+                        <p class="text-sm text-gray-600">Publications</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bio -->
+            {% if researcher.bio %}
+            <div class="mt-8 pt-8 border-t border-gray-200">
+                <h3 class="text-xl font-bold mb-4 text-gray-900">About</h3>
+                <div class="prose max-w-none text-gray-700">
+                    {{ researcher.bio|replace('\n', '<br>')|safe }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Publications Section -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Research Publications</h2>
+            <span class="text-gray-600">{{ publications|length }} publications</span>
+        </div>
+        
+        {% if publications %}
+        <div class="space-y-6">
+            {% for publication in publications %}
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mr-2">
+                                {{ publication.research_type.value|replace('_', ' ')|title }}
+                            </span>
+                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
+                                {{ publication.year }}
+                            </span>
+                        </div>
+                        <span class="text-sm text-gray-500">
+                            <i class="fas fa-calendar-alt mr-1"></i> {{ publication.created_at.strftime('%b %d, %Y') }}
+                        </span>
+                    </div>
+                    
+                    <h3 class="font-bold text-xl mb-3">
+                        <a href="/publication/{{ publication.id }}" class="text-gray-800 hover:text-primary">
+                            {{ publication.title }}
+                        </a>
+                    </h3>
+                    
+                    <p class="text-gray-600 mb-4 line-clamp-3">{{ publication.abstract }}</p>
+                    
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        {% for keyword in publication.keywords.split(',')[:3] %}
+                        <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+                            {{ keyword.strip() }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="flex items-center justify-between border-t border-gray-100 pt-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+                                <i class="fas fa-university text-gray-600"></i>
+                            </div>
+                            <span class="text-sm text-gray-700">{{ publication.university.abbreviation or publication.university.name }}</span>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3">
+                            <a 
+                                href="/publication/{{ publication.id }}" 
+                                class="text-primary font-semibold hover:underline"
+                            >
+                                View Details <i class="fas fa-chevron-right ml-1"></i>
+                            </a>
+                            {% if publication.filename %}
+                            <a 
+                                href="/static/uploads/{{ publication.filename }}" 
+                                class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200"
+                                target="_blank"
+                            >
+                                <i class="fas fa-download mr-1"></i> PDF
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% else %}
+        <!-- No Publications -->
+        <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+            <i class="fas fa-book-open text-gray-400 text-5xl mb-4"></i>
+            <h4 class="text-xl font-semibold text-gray-600 mb-2">No publications yet</h4>
+            <p class="text-gray-500 mb-6">This researcher hasn't published any research yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Stats Card -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h3 class="text-xl font-bold mb-6 text-gray-900">Research Overview</h3>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-primary mb-1">{{ publications|length }}</div>
+                <p class="text-sm text-gray-600">Total Publications</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="text-2xl font-bold text-secondary mb-1">
+                    {% set years = publications|map(attribute='year')|unique|list %}
+                    {{ years|length }}
+                </div>
+                <p class="text-sm text-gray-600">Active Years</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="text-2xl font-bold text-accent mb-1">
+                    {% set types = publications|map(attribute='research_type')|map(attribute='value')|unique|list %}
+                    {{ types|length }}
+                </div>
+                <p class="text-sm text-gray-600">Research Types</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="text-2xl font-bold text-gray-700 mb-1">
+                    {% if publications %}
+                        {{ (publications|map(attribute='year')|max) }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+                <p class="text-sm text-gray-600">Latest Publication</p>
+            </div>
+        </div>
+        
+        <!-- Research Types Distribution -->
+        {% if publications %}
+        <div class="mt-8 pt-8 border-t border-gray-200">
+            <h4 class="font-semibold mb-4 text-gray-700">Research by Type</h4>
+            <div class="space-y-3">
+                {% set type_counts = {} %}
+                {% for pub in publications %}
+                    {% set type = pub.research_type.value %}
+                    {% if type not in type_counts %}
+                        {% set _ = type_counts.update({type: 1}) %}
+                    {% else %}
+                        {% set _ = type_counts.update({type: type_counts[type] + 1}) %}
+                    {% endif %}
+                {% endfor %}
+                
+                {% for type, count in type_counts.items() %}
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm font-medium text-gray-700">{{ type|replace('_', ' ')|title }}</span>
+                        <span class="text-sm text-gray-500">{{ count }} publication{{ 's' if count > 1 else '' }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                            class="bg-primary h-2 rounded-full" 
+                            style="width: {{ (count / publications|length * 100)|round|int }}%"
+                        ></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Back to Search -->
+    <div class="mt-8 text-center">
+        <a 
+            href="/search" 
+            class="inline-flex items-center text-primary font-semibold hover:underline"
+        >
+            <i class="fas fa-arrow-left mr-2"></i> Back to Search Results
+        </a>
+    </div>
+</div>
+
+{% endblock %}

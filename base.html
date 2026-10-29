@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WE UNIRESEARCHITY - Research Repository for Kenyan Universities{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#10b981',  // Emerald green
+                        'primary-dark': '#059669',
+                        'primary-light': '#34d399',
+                        'secondary': '#1e40af',  // Blue
+                        'accent': '#7c3aed',     // Purple
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #10b981 0%, #1e40af 100%);
+        }
+        .card-hover {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #10b981;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .mobile-menu.open {
+            max-height: 500px;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">WE UNIRESEARCHITY</h1>
+                        <p class="text-xs text-gray-600">Research Repository for Kenyan Universities</p>
+                    </div>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-6">
+                    <a href="/" class="text-gray-700 hover:text-primary font-medium">Home</a>
+                    <a href="/search" class="text-gray-700 hover:text-primary font-medium">Browse Research</a>
+                    <a href="/submit" class="text-gray-700 hover:text-primary font-medium">Submit Research</a>
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-primary font-medium flex items-center">
+                            Universities <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div class="absolute hidden group-hover:block bg-white shadow-lg rounded-lg mt-2 py-2 w-48 z-10">
+                            {% for university in universities %}
+                            <a href="/search?university_id={{ university.id }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                {{ university.abbreviation or university.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if admin %}
+                    <a href="/admin/dashboard" class="text-gray-700 hover:text-primary font-medium">
+                        <i class="fas fa-lock mr-1"></i> Admin
+                    </a>
+                    {% endif %}
+                </nav>
+                
+                <!-- Mobile menu button -->
+                <button id="mobileMenuButton" class="md:hidden text-gray-700">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div id="mobileMenu" class="mobile-menu md:hidden mt-4">
+                <div class="flex flex-col space-y-3 pb-4">
+                    <a href="/" class="text-gray-700 hover:text-primary font-medium py-2 border-b border-gray-100">Home</a>
+                    <a href="/search" class="text-gray-700 hover:text-primary font-medium py-2 border-b border-gray-100">Browse Research</a>
+                    <a href="/submit" class="text-gray-700 hover:text-primary font-medium py-2 border-b border-gray-100">Submit Research</a>
+                    <div class="py-2 border-b border-gray-100">
+                        <p class="font-medium text-gray-700 mb-2">Universities</p>
+                        <div class="pl-4 flex flex-col space-y-2">
+                            {% for university in universities %}
+                            <a href="/search?university_id={{ university.id }}" class="text-gray-600 hover:text-primary">
+                                {{ university.abbreviation or university.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if admin %}
+                    <a href="/admin/dashboard" class="text-gray-700 hover:text-primary font-medium py-2">
+                        <i class="fas fa-lock mr-1"></i> Admin Dashboard
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">WE UNIRESEARCHITY</h3>
+                    <p class="text-gray-300">
+                        A searchable repository where students and researchers at Kenyan universities 
+                        can submit, discover, and browse research (theses, papers, datasets).
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="text-gray-300 hover:text-primary-light">Home</a></li>
+                        <li><a href="/search" class="text-gray-300 hover:text-primary-light">Browse Research</a></li>
+                        <li><a href="/submit" class="text-gray-300 hover:text-primary-light">Submit Research</a></li>
+                        <li><a href="/admin" class="text-gray-300 hover:text-primary-light">Admin Login</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Contact</h4>
+                    <p class="text-gray-300 mb-2">
+                        <i class="fas fa-envelope mr-2"></i> contact@uniresearchity.example.com
+                    </p>
+                    <p class="text-gray-300">
+                        <i class="fas fa-map-marker-alt mr-2"></i> Nairobi, Kenya
+                    </p>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-400">
+                <p>&copy; 2024 WE UNIRESEARCHITY. All rights reserved.</p>
+                <p class="text-sm mt-2">Designed for low bandwidth and mobile devices</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('open');
+                const icon = mobileMenuButton.querySelector('i');
+                if (mobileMenu.classList.contains('open')) {
+                    icon.className = 'fas fa-times text-xl';
+                } else {
+                    icon.className = 'fas fa-bars text-xl';
+                }
+            });
+        }
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                mobileMenu.classList.remove('open');
+                const icon = mobileMenuButton.querySelector('i');
+                if (icon) icon.className = 'fas fa-bars text-xl';
+            }
+        });
+        
+        // Flash message auto-remove
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const flashMessages = document.querySelectorAll('.flash-message');
+                flashMessages.forEach(msg => {
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 300);
+                });
+            }, 5000);
+        });
+        
+        // Copy to clipboard function
+        window.copyToClipboard = function(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check mr-1"></i> Copied!';
+                button.classList.add('bg-green-500', 'hover:bg-green-600');
+                button.classList.remove('bg-primary', 'hover:bg-primary-dark');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('bg-green-500', 'hover:bg-green-600');
+                    button.classList.add('bg-primary', 'hover:bg-primary-dark');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy text to clipboard');
+            });
+        };
+        
+        // Show loading spinner
+        window.showLoading = function(button) {
+            const originalText = button.innerHTML;
+            button.innerHTML = '<div class="loading-spinner"></div>';
+            button.disabled = true;
+            return originalText;
+        };
+        
+        // Hide loading spinner
+        window.hideLoading = function(button, originalText) {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        };
+        
+        // Form validation
+        window.validateForm = function(formId) {
+            const form = document.getElementById(formId);
+            if (!form) return true;
+            
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('border-red-500');
+                    isValid = false;
+                    
+                    // Add error message if not exists
+                    if (!field.nextElementSibling || !field.nextElementSibling.classList.contains('error-message')) {
+                        const errorMsg = document.createElement('p');
+                        errorMsg.className = 'error-message text-red-500 text-sm mt-1';
+                        errorMsg.textContent = 'This field is required';
+                        field.parentNode.insertBefore(errorMsg, field.nextSibling);
+                    }
+                } else {
+                    field.classList.remove('border-red-500');
+                    const errorMsg = field.nextElementSibling;
+                    if (errorMsg && errorMsg.classList.contains('error-message')) {
+                        errorMsg.remove();
+                    }
+                }
+            });
+            
+            return isValid;
+        };
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

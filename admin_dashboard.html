@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - WE UNIRESEARCHITY{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="flex justify-between items-center mb-2">
+        <h1 class="text-3xl font-bold">Admin Dashboard</h1>
+        <button 
+            onclick="logout()" 
+            class="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 flex items-center"
+        >
+            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+        </button>
+    </div>
+    <p class="text-gray-600">Manage research submissions and repository content</p>
+</div>
+
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
+                <i class="fas fa-clock text-primary text-xl"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold">{{ pending_publications|length }}</div>
+                <p class="text-sm text-gray-600">Pending Review</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                <i class="fas fa-check text-green-600 text-xl"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold">{% if stats %}{{ stats.total_publications }}{% else %}0{% endif %}</div>
+                <p class="text-sm text-gray-600">Approved</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                <i class="fas fa-times text-red-600 text-xl"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold">0</div>
+                <p class="text-sm text-gray-600">Rejected</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                <i class="fas fa-users text-blue-600 text-xl"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-bold">{% if stats %}{{ stats.total_researchers }}{% else %}0{% endif %}</div>
+                <p class="text-sm text-gray-600">Researchers</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Submissions -->
+<div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+    <div class="p-6 border-b border-gray-200">
+        <h2 class="text-xl font-bold">Pending Submissions</h2>
+        <p class="text-gray-600">Research waiting for approval</p>
+    </div>
+    
+    {% if pending_publications %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Authors</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">University</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for publication in pending_publications %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-gray-900 line-clamp-2">{{ publication.title }}</div>
+                        <div class="text-sm text-gray-500">{{ publication.research_type.value|replace('_', ' ')|title }} • {{ publication.year }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900">
+                            {% for researcher in publication.researchers %}
+                            <div>{{ researcher.full_name }}</div>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900">{{ publication.university.name }}</div>
+                        {% if publication.department %}
+                        <div class="text-sm text-gray-500">{{ publication.department }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500">
+                        {{ publication.created_at.strftime('%Y-%m-%d') }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex space-x-2">
+                            <button 
+                                onclick="viewSubmission({{ publication.id }})" 
+                                class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm font-medium hover:bg-blue-200 flex items-center"
+                            >
+                                <i class="fas fa-eye mr-1"></i> View
+                            </button>
+                            <button 
+                                onclick="approveSubmission({{ publication.id }})" 
+                                class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm font-medium hover:bg-green-200 flex items-center"
+                            >
+                                <i class="fas fa-check mr-1"></i> Approve
+                            </button>
+                            <button 
+                                onclick="rejectSubmission({{ publication.id }})" 
+                                class="bg-red-100 text-red-700 px-3 py-1 rounded text-sm font-medium hover:bg-red-200 flex items-center"
+                            >
+                                <i class="fas fa-times mr-1"></i> Reject
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="p-12 text-center">
+        <i class="fas fa-check-circle text-gray-400 text-5xl mb-4"></i>
+        <h4 class="text-xl font-semibold text-gray-600 mb-2">No pending submissions</h4>
+        <p class="text-gray-500">All submissions have been reviewed.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Quick Actions -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <!-- Add University -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-lg font-bold mb-4">Add University</h3>
+        <form id="addUniversityForm" onsubmit="return addUniversity(event)">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">University Name</label>
+                    <input 
+                        type="text" 
+                        id="uniName" 
+                        required 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Abbreviation</label>
+                        <input 
+                            type="text" 
+                            id="uniAbbr" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                        <input 
+                            type="text" 
+                            id="uniLocation" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                    </div>
+                </div>
+                <button 
+                    type="submit" 
+                    class="w-full bg-primary text-white py-2 rounded-lg font-semibold hover:bg-primary-dark"
+                >
+                    Add University
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- System Info -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-lg font-bold mb-4">System Information</h3>
+        <div class="space-y-3">
+            <div class="flex justify-between">
+                <span class="text-gray-600">Repository Version</span>
+                <span class="font-medium">1.0.0</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600">Database</span>
+                <span class="font-medium">SQLite</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600">Storage Used</span>
+                <span class="font-medium">0.5 MB</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600">Last Backup</span>
+                <span class="font-medium">Today, 02:00</span>
+            </div>
+        </div>
+        
+        <div class="mt-6 pt-6 border-t border-gray-200">
+            <h4 class="font-semibold mb-3">Quick Links</h4>
+            <div class="grid grid-cols-2 gap-3">
+                <a href="/" class="bg-gray-100 text-gray-800 text-center py-2 rounded-lg font-medium hover:bg-gray-200">
+                    <i class="fas fa-home mr-1"></i> Home
+                </a>
+                <a href="/search" class="bg-gray-100 text-gray-800 text-center py-2 rounded-lg font-medium hover:bg-gray-200">
+                    <i class="fas fa-search mr-1"></i> Browse
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Viewing Submission -->
+<div id="viewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-xl bg-white">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold" id="modalTitle">Submission Details</h3>
+            <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div id="modalContent">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Check if user is logged in
+    document.addEventListener('DOMContentLoaded', () => {
+        if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+            window.location.href = '/admin';
+        }
+    });
+    
+    // Logout function
+    function logout() {
+        sessionStorage.removeItem('adminLoggedIn');
+        sessionStorage.removeItem('adminUsername');
+        window.location.href = '/admin';
+    }
+    
+    // View submission details
+    function viewSubmission(publicationId) {
+        // In a real app, this would fetch submission details from API
+        // For demo, we'll show sample data
+        const modalContent = document.getElementById('modalContent');
+        modalContent.innerHTML = `
+            <div class="space-y-4">
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Title</h4>
+                    <p class="text-gray-900">Sample Research Title</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Abstract</h4>
+                    <p class="text-gray-900">This is a sample abstract for the research submission.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Authors</h4>
+                    <p class="text-gray-900">John Doe, Jane Smith</p>
+                </div>
+                <div class="flex space-x-4 mt-6">
+                    <button 
+                        onclick="approveSubmission(${publicationId})" 
+                        class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600"
+                    >
+                        <i class="fas fa-check mr-2"></i> Approve
+                    </button>
+                    <button 
+                        onclick="rejectSubmission(${publicationId})" 
+                        class="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600"
+                    >
+                        <i class="fas fa-times mr-2"></i> Reject
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('modalTitle').textContent = 'Submission #' + publicationId;
+        document.getElementById('viewModal').classList.remove('hidden');
+    }
+    
+    // Close modal
+    function closeModal() {
+        document.getElementById('viewModal').classList.add('hidden');
+    }
+    
+    // Approve submission
+    function approveSubmission(publicationId) {
+        if (confirm(`Approve submission #${publicationId}?`)) {
+            showFlash(`Submission #${publicationId} approved successfully!`, 'success');
+            closeModal();
+            
+            // In a real app, this would make an API call
+            // For demo, we'll simulate by removing from UI
+            setTimeout(() => {
+                const row = document.querySelector(`[onclick*="${publicationId}"]`)?.closest('tr');
+                if (row) {
+                    row.style.opacity = '0.5';
+                    setTimeout(() => row.remove(), 300);
+                }
+            }, 1000);
+        }
+    }
+    
+    // Reject submission
+    function rejectSubmission(publicationId) {
+        const reason = prompt('Please enter reason for rejection:');
+        if (reason !== null && reason.trim()) {
+            showFlash(`Submission #${publicationId} rejected. Reason: ${reason}`, 'error');
+            closeModal();
+            
+            // In a real app, this would make an API call
+            setTimeout(() => {
+                const row = document.querySelector(`[onclick*="${publicationId}"]`)?.closest('tr');
+                if (row) {
+                    row.style.opacity = '0.5';
+                    setTimeout(() => row.remove(), 300);
+                }
+            }, 1000);
+        }
+    }
+    
+    // Add university
+    function addUniversity(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById('uniName').value;
+        const abbr = document.getElementById('uniAbbr').value;
+        const location = document.getElementById('uniLocation').value;
+        
+        if (!name.trim()) {
+            alert('University name is required');
+            return false;
+        }
+        
+        // In a real app, this would make an API call
+        showFlash(`University "${name}" added successfully!`, 'success');
+        
+        // Reset form
+        event.target.reset();
+        
+        return false;
+    }
+    
+    // Flash message function
+    function showFlash(message, type = 'info') {
+        // Create flash message
+        const flashDiv = document.createElement('div');
+        flashDiv.className = `fixed top-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+        flashDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-3"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(flashDiv);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            flashDiv.style.opacity = '0';
+            flashDiv.style.transform = 'translateX(100%)';
+            setTimeout(() => flashDiv.remove(), 300);
+        }, 3000);
+    }
+    
+    // Close modal when clicking outside
+    document.getElementById('viewModal').addEventListener('click', (e) => {
+        if (e.target.id === 'viewModal') {
+            closeModal();
+        }
+    });
+</script>
+{% endblock %}

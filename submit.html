@@ -1,0 +1,600 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Research - WE UNIRESEARCHITY{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8 text-center">
+        <h1 class="text-3xl font-bold mb-2">Submit Research</h1>
+        <p class="text-gray-600">
+            Share your research with the academic community. All submissions are reviewed by administrators before publication.
+        </p>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center">
+                <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-semibold">1</div>
+                <div class="ml-3">
+                    <p class="font-semibold">Research Details</p>
+                    <p class="text-sm text-gray-500">Basic information about your research</p>
+                </div>
+            </div>
+            
+            <div class="h-1 flex-grow bg-gray-200 mx-4"></div>
+            
+            <div class="flex items-center">
+                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center font-semibold">2</div>
+                <div class="ml-3">
+                    <p class="font-semibold text-gray-500">Authors</p>
+                    <p class="text-sm text-gray-400">Researcher information</p>
+                </div>
+            </div>
+            
+            <div class="h-1 flex-grow bg-gray-200 mx-4"></div>
+            
+            <div class="flex items-center">
+                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center font-semibold">3</div>
+                <div class="ml-3">
+                    <p class="font-semibold text-gray-500">Upload</p>
+                    <p class="text-sm text-gray-400">Upload your PDF file</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission Form -->
+    <form id="submitForm" class="bg-white rounded-xl shadow-lg p-6 md:p-8" onsubmit="return submitResearch(event)">
+        <!-- Flash Messages -->
+        <div id="flashMessages" class="mb-6"></div>
+
+        <!-- Research Details Section -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-6 pb-3 border-b border-gray-200">Research Details</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Title -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Research Title <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        name="title" 
+                        required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="Enter the full title of your research"
+                    >
+                </div>
+                
+                <!-- Abstract -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Abstract <span class="text-red-500">*</span>
+                    </label>
+                    <textarea 
+                        name="abstract" 
+                        rows="5" 
+                        required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="Provide a brief summary of your research (minimum 100 characters)"
+                    ></textarea>
+                    <p class="text-sm text-gray-500 mt-1">Minimum 100 characters. This will be publicly visible.</p>
+                </div>
+                
+                <!-- Keywords -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Keywords <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        name="keywords" 
+                        required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="Enter comma-separated keywords (e.g., machine learning, agriculture, Kenya)"
+                    >
+                    <p class="text-sm text-gray-500 mt-1">Separate with commas. Maximum 10 keywords.</p>
+                </div>
+                
+                <!-- Year and Research Type -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Year <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="number" 
+                        name="year" 
+                        required 
+                        min="1900" 
+                        max="2100" 
+                        value="2024" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Research Type <span class="text-red-500">*</span>
+                    </label>
+                    <select 
+                        name="research_type" 
+                        required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                        <option value="">Select type</option>
+                        <option value="thesis">Thesis/Dissertation</option>
+                        <option value="journal_article">Journal Article</option>
+                        <option value="conference_paper">Conference Paper</option>
+                        <option value="dataset">Dataset</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <!-- Subject Area -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Subject Area <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        name="subject_area" 
+                        required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="e.g., Computer Science, Public Health"
+                    >
+                </div>
+                
+                <!-- University -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        University <span class="text-red-500">*</span>
+                    </label>
+                    <select 
+                        name="university_id" 
+                        required 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                        <option value="">Select university</option>
+                        {% for university in universities %}
+                        <option value="{{ university.id }}">{{ university.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Department -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Department
+                    </label>
+                    <input 
+                        type="text" 
+                        name="department" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="e.g., Department of Computer Science"
+                    >
+                </div>
+                
+                <!-- Supervisor (for theses) -->
+                <div id="supervisorField" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Supervisor/Advisor
+                    </label>
+                    <input 
+                        type="text" 
+                        name="supervisor" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="Full name of supervisor"
+                    >
+                </div>
+                
+                <!-- DOI -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        DOI (Digital Object Identifier)
+                    </label>
+                    <input 
+                        type="text" 
+                        name="doi" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="e.g., 10.xxxx/xxxx"
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- Authors Section -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-6 pb-3 border-b border-gray-200">Authors/Researchers</h3>
+            
+            <div id="authorsContainer">
+                <!-- First Author (required) -->
+                <div class="author-entry mb-6 p-4 border border-gray-200 rounded-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-semibold text-gray-700">Author 1 (Primary)</h4>
+                        <span class="text-sm text-gray-500">Required</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Full Name <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                name="researcher_names[]" 
+                                required 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                placeholder="Full name"
+                            >
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Email <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="email" 
+                                name="researcher_emails[]" 
+                                required 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                placeholder="Email address"
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add Author Button -->
+            <button 
+                type="button" 
+                onclick="addAuthor()" 
+                class="flex items-center text-primary font-semibold hover:underline"
+            >
+                <i class="fas fa-plus-circle mr-2"></i> Add Another Author
+            </button>
+            <p class="text-sm text-gray-500 mt-2">Maximum 10 authors allowed.</p>
+        </div>
+
+        <!-- File Upload Section -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-6 pb-3 border-b border-gray-200">Upload PDF File</h3>
+            
+            <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
+                <div class="mb-4">
+                    <i class="fas fa-file-pdf text-4xl text-red-500"></i>
+                </div>
+                
+                <p class="text-lg font-semibold mb-2">Upload your research PDF</p>
+                <p class="text-gray-600 mb-6">
+                    Maximum file size: 20MB. Only PDF files are accepted.
+                </p>
+                
+                <div class="max-w-md mx-auto">
+                    <input 
+                        type="file" 
+                        id="pdfFile" 
+                        name="pdf_file" 
+                        accept=".pdf" 
+                        class="hidden"
+                        onchange="updateFileName()"
+                    >
+                    <label for="pdfFile" class="cursor-pointer">
+                        <div class="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-dark inline-block">
+                            <i class="fas fa-upload mr-2"></i> Choose PDF File
+                        </div>
+                    </label>
+                    
+                    <div id="fileName" class="mt-4 text-gray-600">
+                        No file selected
+                    </div>
+                    
+                    <div id="fileSize" class="mt-2 text-sm text-gray-500"></div>
+                </div>
+            </div>
+            
+            <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex">
+                    <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                    <div>
+                        <p class="font-semibold text-blue-800 mb-1">Important Notes</p>
+                        <ul class="text-blue-700 text-sm space-y-1">
+                            <li>• Make sure your PDF includes title, authors, and abstract</li>
+                            <li>• Remove any personal contact information if needed</li>
+                            <li>• Your submission will be reviewed within 5-7 working days</li>
+                            <li>• You'll receive email notification when approved</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submission Agreement -->
+        <div class="mb-8 bg-gray-50 border border-gray-200 rounded-xl p-6">
+            <div class="flex items-start">
+                <input 
+                    type="checkbox" 
+                    id="agreement" 
+                    name="agreement" 
+                    required 
+                    class="mt-1 mr-3"
+                >
+                <label for="agreement" class="text-gray-700">
+                    <span class="font-semibold">I agree to the following terms:</span>
+                    <ul class="mt-2 text-sm text-gray-600 space-y-1">
+                        <li>• I confirm that I have the right to share this research</li>
+                        <li>• The research is my original work or I have obtained necessary permissions</li>
+                        <li>• I understand that all submissions are publicly accessible once approved</li>
+                        <li>• I agree to the repository's terms of use and privacy policy</li>
+                    </ul>
+                </label>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-center">
+            <button 
+                type="submit" 
+                id="submitButton" 
+                class="bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-dark text-lg w-full md:w-auto"
+            >
+                <i class="fas fa-paper-plane mr-2"></i> Submit Research for Review
+            </button>
+        </div>
+    </form>
+
+    <!-- Submission Guidelines -->
+    <div class="mt-8 bg-gray-50 rounded-xl p-6">
+        <h3 class="text-xl font-bold mb-4">Submission Guidelines</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h4 class="font-semibold mb-2 text-gray-700">Acceptable Content</h4>
+                <ul class="text-gray-600 text-sm space-y-1">
+                    <li>• Completed theses and dissertations</li>
+                    <li>• Published or unpublished journal articles</li>
+                    <li>• Conference papers and proceedings</li>
+                    <li>• Research datasets with documentation</li>
+                    <li>• Technical reports and working papers</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-semibold mb-2 text-gray-700">Format Requirements</h4>
+                <ul class="text-gray-600 text-sm space-y-1">
+                    <li>• PDF format only (.pdf extension)</li>
+                    <li>• Maximum file size: 20MB</li>
+                    <li>• Include title page with abstract</li>
+                    <li>• Text should be searchable (not scanned images)</li>
+                    <li>• No password protection on PDF</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show/hide supervisor field based on research type
+    document.querySelector('[name="research_type"]').addEventListener('change', function() {
+        const supervisorField = document.getElementById('supervisorField');
+        if (this.value === 'thesis') {
+            supervisorField.classList.remove('hidden');
+            supervisorField.querySelector('input').required = true;
+        } else {
+            supervisorField.classList.add('hidden');
+            supervisorField.querySelector('input').required = false;
+        }
+    });
+
+    // Author management
+    let authorCount = 1;
+    
+    function addAuthor() {
+        if (authorCount >= 10) {
+            alert('Maximum 10 authors allowed');
+            return;
+        }
+        
+        authorCount++;
+        const authorsContainer = document.getElementById('authorsContainer');
+        const newAuthor = document.createElement('div');
+        newAuthor.className = 'author-entry mb-6 p-4 border border-gray-200 rounded-lg';
+        newAuthor.innerHTML = `
+            <div class="flex justify-between items-center mb-4">
+                <h4 class="font-semibold text-gray-700">Author ${authorCount}</h4>
+                <button type="button" onclick="removeAuthor(this)" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-times"></i> Remove
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        name="researcher_names[]" 
+                        required 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="Full name"
+                    >
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Email <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="email" 
+                        name="researcher_emails[]" 
+                        required 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="Email address"
+                    >
+                </div>
+            </div>
+        `;
+        authorsContainer.appendChild(newAuthor);
+    }
+    
+    function removeAuthor(button) {
+        if (authorCount <= 1) {
+            alert('At least one author is required');
+            return;
+        }
+        
+        const authorEntry = button.closest('.author-entry');
+        authorEntry.remove();
+        authorCount--;
+        
+        // Update remaining author numbers
+        const entries = document.querySelectorAll('.author-entry');
+        entries.forEach((entry, index) => {
+            const title = entry.querySelector('h4');
+            if (title) {
+                title.textContent = `Author ${index + 1}${index === 0 ? ' (Primary)' : ''}`;
+            }
+        });
+    }
+
+    // File upload handling
+    function updateFileName() {
+        const fileInput = document.getElementById('pdfFile');
+        const fileNameDisplay = document.getElementById('fileName');
+        const fileSizeDisplay = document.getElementById('fileSize');
+        
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const fileName = file.name;
+            const fileSize = (file.size / (1024 * 1024)).toFixed(2); // MB
+            
+            fileNameDisplay.innerHTML = `<i class="fas fa-file-pdf text-red-500 mr-2"></i> ${fileName}`;
+            fileSizeDisplay.textContent = `Size: ${fileSize} MB`;
+            
+            // Validate file size (20MB max)
+            if (file.size > 20 * 1024 * 1024) {
+                fileSizeDisplay.innerHTML = `<span class="text-red-500">File too large! Maximum size is 20MB</span>`;
+                fileInput.value = ''; // Clear the file input
+                fileNameDisplay.textContent = 'No file selected';
+                return;
+            }
+            
+            // Validate file type
+            if (!fileName.toLowerCase().endsWith('.pdf')) {
+                fileSizeDisplay.innerHTML = `<span class="text-red-500">Only PDF files are allowed</span>`;
+                fileInput.value = '';
+                fileNameDisplay.textContent = 'No file selected';
+                return;
+            }
+        } else {
+            fileNameDisplay.textContent = 'No file selected';
+            fileSizeDisplay.textContent = '';
+        }
+    }
+
+    // Form submission
+    async function submitResearch(event) {
+        event.preventDefault();
+        
+        const submitButton = document.getElementById('submitButton');
+        const originalText = showLoading(submitButton);
+        
+        // Validate form
+        if (!validateForm('submitForm')) {
+            hideLoading(submitButton, originalText);
+            return false;
+        }
+        
+        // Validate agreement
+        const agreement = document.getElementById('agreement');
+        if (!agreement.checked) {
+            showFlash('Please agree to the terms before submitting', 'error');
+            hideLoading(submitButton, originalText);
+            return false;
+        }
+        
+        // Validate file
+        const fileInput = document.getElementById('pdfFile');
+        if (!fileInput.files.length) {
+            showFlash('Please select a PDF file to upload', 'error');
+            hideLoading(submitButton, originalText);
+            return false;
+        }
+        
+        // Create FormData
+        const formData = new FormData(event.target);
+        
+        try {
+            // In a real app, this would send to the backend API
+            // For now, we'll simulate a successful submission
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            showFlash('Research submitted successfully! It will be reviewed by an administrator.', 'success');
+            
+            // Reset form
+            event.target.reset();
+            document.getElementById('fileName').textContent = 'No file selected';
+            document.getElementById('fileSize').textContent = '';
+            authorCount = 1;
+            
+            // Show success message with details
+            const successHTML = `
+                <div class="bg-green-50 border border-green-200 rounded-xl p-6 mb-6">
+                    <div class="flex">
+                        <i class="fas fa-check-circle text-green-500 text-2xl mr-4"></i>
+                        <div>
+                            <h4 class="font-bold text-green-800 mb-2">Submission Received!</h4>
+                            <p class="text-green-700 mb-3">
+                                Your research has been submitted for review. You'll receive an email notification once it's approved.
+                            </p>
+                            <div class="flex space-x-4">
+                                <a href="/" class="text-green-700 hover:text-green-800 font-semibold">
+                                    <i class="fas fa-home mr-1"></i> Return Home
+                                </a>
+                                <a href="/submit" class="text-green-700 hover:text-green-800 font-semibold">
+                                    <i class="fas fa-plus mr-1"></i> Submit Another
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('flashMessages').innerHTML = successHTML;
+            
+        } catch (error) {
+            showFlash('Error submitting research: ' + error.message, 'error');
+        } finally {
+            hideLoading(submitButton, originalText);
+        }
+        
+        return false;
+    }
+    
+    function showFlash(message, type = 'info') {
+        const flashDiv = document.getElementById('flashMessages');
+        const bgColor = type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 
+                       type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 
+                       'bg-blue-50 border-blue-200 text-blue-700';
+        
+        const icon = type === 'error' ? 'fa-exclamation-circle' : 
+                    type === 'success' ? 'fa-check-circle' : 
+                    'fa-info-circle';
+        
+        const flashHTML = `
+            <div class="${bgColor} border rounded-xl p-4 mb-4 flash-message">
+                <div class="flex items-center">
+                    <i class="fas ${icon} mr-3"></i>
+                    <span>${message}</span>
+                </div>
+            </div>
+        `;
+        
+        flashDiv.innerHTML = flashHTML;
+    }
+</script>
+{% endblock %}

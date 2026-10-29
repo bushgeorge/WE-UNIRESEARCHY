@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Home - WE UNIRESEARCHITY{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="gradient-bg text-white rounded-2xl p-8 mb-12">
+    <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Discover & Share Research from Kenyan Universities</h2>
+        <p class="text-lg mb-8 opacity-90">
+            A centralized repository for theses, papers, and datasets from universities across Kenya. 
+            Search, submit, and collaborate on research that matters.
+        </p>
+        
+        <!-- Search Bar -->
+        <form action="/search" method="get" class="max-w-2xl mx-auto">
+            <div class="flex flex-col md:flex-row gap-2">
+                <input 
+                    type="text" 
+                    name="q" 
+                    placeholder="Search research by title, author, keywords, or abstract..." 
+                    class="flex-grow px-6 py-3 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                <button 
+                    type="submit" 
+                    class="bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                >
+                    <i class="fas fa-search mr-2"></i> Search
+                </button>
+            </div>
+            <div class="mt-4 text-sm">
+                <span class="opacity-80">Try:</span>
+                <a href="/search?q=climate+change" class="ml-2 underline hover:no-underline">climate change</a>
+                <a href="/search?q=machine+learning" class="ml-2 underline hover:no-underline">machine learning</a>
+                <a href="/search?q=public+health" class="ml-2 underline hover:no-underline">public health</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="mb-12">
+    <h3 class="text-2xl font-bold mb-8 text-center">Repository Statistics</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-xl p-6 shadow-lg text-center card-hover">
+            <div class="text-3xl font-bold text-primary mb-2">{{ stats.total_publications }}</div>
+            <p class="text-gray-600">Research Publications</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-lg text-center card-hover">
+            <div class="text-3xl font-bold text-secondary mb-2">{{ stats.total_researchers }}</div>
+            <p class="text-gray-600">Researchers</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-lg text-center card-hover">
+            <div class="text-3xl font-bold text-accent mb-2">{{ stats.publications_by_university|length }}</div>
+            <p class="text-gray-600">Universities</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-lg text-center card-hover">
+            <div class="text-3xl font-bold text-gray-700 mb-2">{{ stats.publications_by_type|length }}</div>
+            <p class="text-gray-600">Research Types</p>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Actions -->
+<section class="mb-12">
+    <h3 class="text-2xl font-bold mb-8 text-center">Get Started</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="/search" class="bg-white rounded-xl p-8 shadow-lg card-hover text-center hover:no-underline">
+            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-search text-primary text-2xl"></i>
+            </div>
+            <h4 class="text-xl font-semibold mb-3 text-gray-800">Browse Research</h4>
+            <p class="text-gray-600">Discover thousands of research papers, theses, and datasets from Kenyan universities.</p>
+        </a>
+        
+        <a href="/submit" class="bg-white rounded-xl p-8 shadow-lg card-hover text-center hover:no-underline">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-upload text-green-600 text-2xl"></i>
+            </div>
+            <h4 class="text-xl font-semibold mb-3 text-gray-800">Submit Research</h4>
+            <p class="text-gray-600">Share your research with the academic community. Upload your thesis, paper, or dataset.</p>
+        </a>
+        
+        <a href="#" onclick="alert('Coming soon!')" class="bg-white rounded-xl p-8 shadow-lg card-hover text-center hover:no-underline">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-users text-blue-600 text-2xl"></i>
+            </div>
+            <h4 class="text-xl font-semibold mb-3 text-gray-800">Find Collaborators</h4>
+            <p class="text-gray-600">Connect with researchers working on similar topics across different universities.</p>
+        </a>
+    </div>
+</section>
+
+<!-- Recent Publications -->
+<section class="mb-12">
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold">Recent Publications</h3>
+        <a href="/search" class="text-primary font-semibold hover:underline">
+            View All <i class="fas fa-arrow-right ml-1"></i>
+        </a>
+    </div>
+    
+    {% if recent_publications %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for publication in recent_publications %}
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-3">
+                    <span class="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full">
+                        {{ publication.research_type.value|replace('_', ' ')|title }}
+                    </span>
+                    <span class="text-gray-500 text-sm">{{ publication.year }}</span>
+                </div>
+                <h4 class="font-bold text-lg mb-2 line-clamp-2">
+                    <a href="/publication/{{ publication.id }}" class="text-gray-800 hover:text-primary">
+                        {{ publication.title }}
+                    </a>
+                </h4>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ publication.abstract[:150] }}...</p>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+                            <i class="fas fa-university text-gray-600 text-sm"></i>
+                        </div>
+                        <span class="text-sm text-gray-700">{{ publication.university.abbreviation or publication.university.name }}</span>
+                    </div>
+                    <a href="/publication/{{ publication.id }}" class="text-primary text-sm font-semibold hover:underline">
+                        Read More <i class="fas fa-chevron-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-gray-50 rounded-xl p-12 text-center">
+        <i class="fas fa-book-open text-gray-400 text-5xl mb-4"></i>
+        <h4 class="text-xl font-semibold text-gray-600 mb-2">No publications yet</h4>
+        <p class="text-gray-500">Be the first to submit research to the repository!</p>
+        <a href="/submit" class="inline-block mt-4 bg-primary text-white px-6 py-2 rounded-lg font-semibold hover:bg-primary-dark">
+            Submit Research
+        </a>
+    </div>
+    {% endif %}
+</section>
+
+<!-- Universities Section -->
+<section class="mb-12">
+    <h3 class="text-2xl font-bold mb-8 text-center">Participating Universities</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {% for university in universities %}
+        <a href="/search?university_id={{ university.id }}" class="bg-white rounded-xl p-6 shadow-lg text-center card-hover hover:no-underline">
+            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-university text-gray-600"></i>
+            </div>
+            <h4 class="font-semibold text-gray-800 mb-1">{{ university.abbreviation or university.name }}</h4>
+            <p class="text-sm text-gray-600">{{ stats.publications_by_university.get(university.name, 0) }} publications</p>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="gradient-bg text-white rounded-2xl p-8 text-center">
+    <h3 class="text-2xl font-bold mb-4">Ready to Share Your Research?</h3>
+    <p class="mb-6 max-w-2xl mx-auto">
+        Contribute to the growing body of knowledge from Kenyan universities. 
+        Your research can inspire future studies and collaborations.
+    </p>
+    <a href="/submit" class="inline-block bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">
+        <i class="fas fa-upload mr-2"></i> Submit Your Research
+    </a>
+</section>
+
+{% endblock %}

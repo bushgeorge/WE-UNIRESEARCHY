@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block title %}Search Research - WE UNIRESEARCHITY{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold mb-2">Browse Research</h1>
+    <p class="text-gray-600">Search and filter research publications from Kenyan universities</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <!-- Filters Sidebar -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-lg p-6 sticky top-6">
+            <h3 class="font-bold text-lg mb-4">Filters</h3>
+            
+            <form method="get" action="/search" id="searchFilters">
+                <!-- Search Query -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <input 
+                        type="text" 
+                        name="q" 
+                        value="{{ query or '' }}" 
+                        placeholder="Keywords, title, author..." 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                </div>
+                
+                <!-- University Filter -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">University</label>
+                    <select 
+                        name="university_id" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                        <option value="">All Universities</option>
+                        {% for university in universities %}
+                        <option value="{{ university.id }}" {% if selected_university == university.id %}selected{% endif %}>
+                            {{ university.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Year Filter -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Year</label>
+                    <input 
+                        type="number" 
+                        name="year" 
+                        value="{{ selected_year or '' }}" 
+                        placeholder="e.g., 2023" 
+                        min="1900" 
+                        max="2100" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                </div>
+                
+                <!-- Research Type Filter -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Research Type</label>
+                    <select 
+                        name="research_type" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                        <option value="">All Types</option>
+                        <option value="thesis" {% if selected_type == 'thesis' %}selected{% endif %}>Thesis/Dissertation</option>
+                        <option value="journal_article" {% if selected_type == 'journal_article' %}selected{% endif %}>Journal Article</option>
+                        <option value="conference_paper" {% if selected_type == 'conference_paper' %}selected{% endif %}>Conference Paper</option>
+                        <option value="dataset" {% if selected_type == 'dataset' %}selected{% endif %}>Dataset</option>
+                        <option value="other" {% if selected_type == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                
+                <!-- Subject Area Filter -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Subject Area</label>
+                    <input 
+                        type="text" 
+                        name="subject_area" 
+                        value="{{ selected_subject or '' }}" 
+                        placeholder="e.g., Computer Science" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <button 
+                        type="submit" 
+                        class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors"
+                    >
+                        <i class="fas fa-search mr-2"></i> Apply Filters
+                    </button>
+                    
+                    <a 
+                        href="/search" 
+                        class="block w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold text-center hover:bg-gray-300 transition-colors"
+                    >
+                        <i class="fas fa-redo mr-2"></i> Clear All
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Results Main Area -->
+    <div class="lg:col-span-3">
+        <!-- Results Summary -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="font-bold text-lg">
+                        {% if query %}
+                        Search Results for "{{ query }}"
+                        {% else %}
+                        All Research Publications
+                        {% endif %}
+                    </h3>
+                    <p class="text-gray-600">{{ total_count }} publications found</p>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <span class="text-gray-600">Sort by:</span>
+                    <select class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option>Most Recent</option>
+                        <option>Most Relevant</option>
+                        <option>Title (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Publications List -->
+        {% if publications %}
+        <div class="space-y-6">
+            {% for publication in publications %}
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mr-2">
+                                {{ publication.research_type.value|replace('_', ' ')|title }}
+                            </span>
+                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
+                                {{ publication.year }}
+                            </span>
+                        </div>
+                        <span class="text-sm text-gray-500">
+                            <i class="fas fa-calendar-alt mr-1"></i> {{ publication.created_at.strftime('%b %d, %Y') }}
+                        </span>
+                    </div>
+                    
+                    <h4 class="font-bold text-xl mb-3">
+                        <a href="/publication/{{ publication.id }}" class="text-gray-800 hover:text-primary">
+                            {{ publication.title }}
+                        </a>
+                    </h4>
+                    
+                    <p class="text-gray-600 mb-4 line-clamp-3">{{ publication.abstract }}</p>
+                    
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        {% for keyword in publication.keywords.split(',')[:5] %}
+                        <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+                            {{ keyword.strip() }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-t border-gray-100 pt-4">
+                        <div class="flex items-center mb-3 sm:mb-0">
+                            <div class="flex items-center mr-4">
+                                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+                                    <i class="fas fa-university text-gray-600"></i>
+                                </div>
+                                <span class="text-sm text-gray-700">{{ publication.university.abbreviation or publication.university.name }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+                                    <i class="fas fa-user-graduate text-gray-600"></i>
+                                </div>
+                                <span class="text-sm text-gray-700">
+                                    {% if publication.researchers %}
+                                        {{ publication.researchers[0].full_name }}
+                                        {% if publication.researchers|length > 1 %}
+                                            +{{ publication.researchers|length - 1 }} more
+                                        {% endif %}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3">
+                            <a 
+                                href="/publication/{{ publication.id }}" 
+                                class="text-primary font-semibold hover:underline"
+                            >
+                                View Details <i class="fas fa-chevron-right ml-1"></i>
+                            </a>
+                            {% if publication.filename %}
+                            <a 
+                                href="/static/uploads/{{ publication.filename }}" 
+                                class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200"
+                                target="_blank"
+                            >
+                                <i class="fas fa-download mr-1"></i> PDF
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-center items-center space-x-2">
+                {% if page > 1 %}
+                <a 
+                    href="/search?page={{ page - 1 }}{% if query %}&q={{ query }}{% endif %}{% if selected_university %}&university_id={{ selected_university }}{% endif %}" 
+                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+                {% endif %}
+                
+                <div class="flex items-center space-x-2">
+                    {% for p in range(1, total_pages + 1) %}
+                        {% if p == page %}
+                        <span class="px-4 py-2 bg-primary text-white rounded-lg font-semibold">{{ p }}</span>
+                        {% elif p >= page - 2 and p <= page + 2 %}
+                        <a 
+                            href="/search?page={{ p }}{% if query %}&q={{ query }}{% endif %}{% if selected_university %}&university_id={{ selected_university }}{% endif %}" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                        >
+                            {{ p }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                {% if page < total_pages %}
+                <a 
+                    href="/search?page={{ page + 1 }}{% if query %}&q={{ query }}{% endif %}{% if selected_university %}&university_id={{ selected_university }}{% endif %}" 
+                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+            
+            <p class="text-center text-gray-600 mt-4">
+                Page {{ page }} of {{ total_pages }} • {{ total_count }} total publications
+            </p>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- No Results -->
+        <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+            <i class="fas fa-search text-gray-400 text-5xl mb-4"></i>
+            <h4 class="text-xl font-semibold text-gray-600 mb-2">No publications found</h4>
+            <p class="text-gray-500 mb-6">
+                {% if query %}
+                No publications match your search criteria. Try different keywords or filters.
+                {% else %}
+                No publications are available yet. Be the first to submit research!
+                {% endif %}
+            </p>
+            <div class="space-x-4">
+                <a 
+                    href="/search" 
+                    class="inline-block bg-gray-200 text-gray-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-300"
+                >
+                    Clear Filters
+                </a>
+                <a 
+                    href="/submit" 
+                    class="inline-block bg-primary text-white px-6 py-2 rounded-lg font-semibold hover:bg-primary-dark"
+                >
+                    Submit Research
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-submit form when certain filters change
+    document.addEventListener('DOMContentLoaded', function() {
+        const filters = ['university_id', 'research_type', 'subject_area'];
+        
+        filters.forEach(filterName => {
+            const element = document.querySelector(`[name="${filterName}"]`);
+            if (element) {
+                element.addEventListener('change', function() {
+                    document.getElementById('searchFilters').submit();
+                });
+            }
+        });
+        
+        // Year input debounce
+        const yearInput = document.querySelector('[name="year"]');
+        if (yearInput) {
+            let timeout;
+            yearInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    document.getElementById('searchFilters').submit();
+                }, 1000);
+            });
+        }
+    });
+</script>
+{% endblock %}
